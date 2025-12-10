@@ -30,7 +30,7 @@ def main():
             cont += contZero
             
             # Debug
-            print(line.strip(), " - ", newDial, " - ", cont)
+            # print(line.strip(), " - ", newDial, " - ", cont)
 
             oldDial = newDial
 

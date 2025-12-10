@@ -4,9 +4,6 @@ def rotations(line, oldDial):
     direction = line[0]
     contZero = 0
 
-    # Se oldDial == 0, não incrementa!
-    # Se result == 0, incrementa!
-
     if direction == 'R':
         result = oldDial + count
 
