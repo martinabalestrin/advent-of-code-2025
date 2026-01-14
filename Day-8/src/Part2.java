@@ -3,17 +3,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-/*
-    Esse código funciona com o input do puzzle, mas com o exemplo não. Isso ocorre porque 20 pontos (que é o caso do exemplo),
-    geram 190 arestas. Enquanto isso, o input do puzzle, que possui 1000 pontos, gera ~500k arestas. Ao fazer o sorting e selecionar 
-    apenas as primeiras 1000 arestas, é possível que não junte todos pontos em apenas um circuito.
-*/
-
-public class Part1 {
+public class Part2 {
     public static void main(String[] args) {
 
         // Lista com coordenadas
@@ -29,14 +21,11 @@ public class Part1 {
 
                 String parts[] = line.split(",");
 
-                int x = Integer.parseInt(parts[0]);
-                int y = Integer.parseInt(parts[1]);
-                int z = Integer.parseInt(parts[2]);
+                long x = Long.parseLong(parts[0]);
+                long y = Long.parseLong(parts[1]);
+                long z = Long.parseLong(parts[2]);
 
                 points.add(new Point(x, y, z));
-
-                // DEBUG - conferir se está certinho
-                // System.out.println("X: " + x + ", Y: " + y + ", Z: " + z);
             }
 
             br.close();
@@ -68,49 +57,39 @@ public class Part1 {
         // Ordena da menor distância para a maior
         Collections.sort(edges);
 
-        // DEBUG - imprime a ArrayList de edges
-        // System.out.println(edges);
-
-        // Cria o UnionFind para fazer as 1000 conexões
+        // Cria o UnionFind para fazer as conexões
         UnionFind uf = new UnionFind(points.size());
 
-        // Se a lista gerar menos que mil pares, pega o menor valor
-        int limit = Math.min(1000, edges.size());
+        int edgesUsed = 0;
+        Edge lastUsedEdge = null;
 
-        // Tenta unir a partir das 1000 menores arestas, se não der, ignora
-        for (int i = 0; i < limit; i++) {
-            Edge e = edges.get(i);
-            uf.union(e.p, e.q);
+        // Tenta unir a partir das menores arestas, se não der, ignora
+        for (Edge e : edges) {
+            if(uf.union(e.p, e.q)) {
+                // Salva a última aresta e incrementa a quantidade utilizada
+                lastUsedEdge = e;
+                edgesUsed++;
+
+                // Se a contagem chegar na quantidade de pontos - 1, para
+                if (edgesUsed == points.size() - 1) break;
+            }
         }
 
-        // Contar o tamanho dos circuitos
-        Map<Integer, Integer> circuitSizes = new HashMap<>();
+        // Multiplicação dos valores de X desses pontos
+        Point p = points.get((int)lastUsedEdge.p);
+        Point q = points.get((int)lastUsedEdge.q);
+        long px = p.x;
+        long qx = q.x;
 
-        for (int i = 0; i < points.size(); i++) {
-            // Tamanho do circuito
-            int root = uf.find(i);
-            circuitSizes.put(root, circuitSizes.getOrDefault(root, 0) + 1);
-        }
-
-        // Calcula resultado final
-        List<Integer> sizes = new ArrayList<>(circuitSizes.values());
-        sizes.sort(Collections.reverseOrder());
-
-        // Para não quebrar, verifica se tem mais de 3 resultados
-        if (sizes.size() < 3) {
-            System.out.println("Menos de 3 circuitos encontrados: " + sizes);
-            return;
-        }
-
-        long result = (long) sizes.get(0) * sizes.get(1) * sizes.get(2);
+        long result = px * qx;     
 
         System.out.println("Resultado: " + result);
     }
 
     static class Point {
-        int x, y, z;
+        long x, y, z;
 
-        Point(int x, int y, int z) {
+        Point(long x, long y, long z) {
             this.x = x;
             this.y = y;
             this.z = z;
@@ -118,10 +97,10 @@ public class Part1 {
     }
 
     static class Edge implements Comparable<Edge> {
-        int p, q;
+        long p, q;
         double dist;
 
-        Edge (int p, int q, double dist) {
+        Edge (long p, long q, double dist) {
             this.p = p;
             this.q = q;
             this.dist = dist;
@@ -163,9 +142,9 @@ public class Part1 {
             return parent[x];
         }
 
-        boolean union (int p, int q) {
-            int rp = find(p);
-            int rq = find(q);
+        boolean union (long p, long q) {
+            int rp = find((int)p);
+            int rq = find((int)q);
 
             if (rp == rq) return false;
 
@@ -181,3 +160,4 @@ public class Part1 {
         }
     }
 }
+
